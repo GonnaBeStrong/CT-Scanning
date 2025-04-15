@@ -1,5 +1,6 @@
 import base64
 import os
+import uvicorn
 from datetime import datetime
 import json
 from http.client import HTTPException
@@ -25,15 +26,15 @@ from PIL import Image, ImageDraw
 import io
 
 
-# 拉取大模型
+# 拉取大模型（请在这里填入自己的模型拉取地址）
 start_time = time.time()
-#login(token="xxx")
+login(token="xxx")
 tokenizer = AutoTokenizer.from_pretrained("bubblepot/R1_test2")
 model_lange = AutoModelForCausalLM.from_pretrained("bubblepot/R1_test2")
 middle_time = time.time()
 print("模型已经下载完成,耗时：", middle_time - start_time, "秒")
 
-# 加载肿瘤识别模型
+# 加载肿瘤识别模型（请在这里填入自己的肿瘤识别模型文件路径）
 model = YOLO('p6_150.pt')
 print("模型已经下载完成,耗时：", middle_time - start_time, "秒")
 
@@ -41,7 +42,7 @@ print("模型已经下载完成,耗时：", middle_time - start_time, "秒")
 app = FastAPI()
 # 挂载图片目录（方便直接访问）
 app.mount("/download", StaticFiles(directory="./"), name="static")
-
+# 配置跨域请求，支持前后端分离
 origins = [
     "http://localhost:8080",  # 允许的前端地址（例如 Vue 前端）
     "http://127.0.0.1:8080",  # 允许的前端地址
@@ -54,18 +55,6 @@ app.add_middleware(
     allow_methods=["*"],  # 允许所有 HTTP 方法
     allow_headers=["*"],  # 允许所有 HTTP 请求头
 )
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
-
-
-
 
 
 @app.websocket("/test-tumor")
@@ -197,24 +186,24 @@ async def process_message(message: Message):
     return JSONResponse(content={"content": response})
 
 
-@app.websocket("/ws/audio")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        # 接收来自前端的音频数据
-        audio_data = await websocket.receive_bytes()
-
-        print("ffmpeg path:", which("ffmpeg"))
-        print("ffprobe path:", which("ffprobe"))
-        AudioSegment.converter = "/opt/homebrew/bin/ffmpeg"
-        audio = AudioSegment.from_wav(io.BytesIO(audio_data))
-        audio = audio.set_frame_rate(16000)
-        audio.export('myPcm.pcm', format="raw")
-
-        # 在这里，你可以处理音频数据（例如：保存、分析、转发等）
-
-        # 回复客户端（可以选择是否要发送回应）
-        await websocket.send_text("Audio data received")
+# @app.websocket("/ws/audio")
+# async def websocket_endpoint(websocket: WebSocket):
+#     await websocket.accept()
+#     while True:
+#         # 接收来自前端的音频数据
+#         audio_data = await websocket.receive_bytes()
+#
+#         print("ffmpeg path:", which("ffmpeg"))
+#         print("ffprobe path:", which("ffprobe"))
+#         AudioSegment.converter = "/opt/homebrew/bin/ffmpeg"
+#         audio = AudioSegment.from_wav(io.BytesIO(audio_data))
+#         audio = audio.set_frame_rate(16000)
+#         audio.export('myPcm.pcm', format="raw")
+#
+#         # 在这里，你可以处理音频数据（例如：保存、分析、转发等）
+#
+#         # 回复客户端（可以选择是否要发送回应）
+#         await websocket.send_text("Audio data received")
 
 @app.get("/query-data")
 async def process_message():
@@ -298,6 +287,8 @@ async def get_images_by_date(date: str):
         "images": [f"http://localhost:8000/download/download/{date}/{img}" for img in images],
         "date": date
     }
+
+
 
 
 
