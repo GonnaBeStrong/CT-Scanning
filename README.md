@@ -108,6 +108,23 @@ uvicorn main:app --host 127.0.0.1 --port 8000 --reload //启动后端服务
 https://github.com/GonnaBeStrong/CT-scanning-foreend
 ```
 
+
+## 后端项目结构解析
+
++	download文件夹，后端系统在检测完前端用户传来的图片之后，会将检测后的图片在download文件夹中以日期为分隔存储下来
++	commentProcess文件夹中放置用来处理用户评价的代码文件
++	ctProcess文件夹放置处理CT检测相关的代码文件
++	dataProcess文件夹放置处理数据看板有关的代码文件
++	historyProcess文件夹放置处理历史检测记录有关的代码文件
++	messageProcess文件夹放置处理AI问答系统有关的代码文件
++	LOG存放日志系统代码
++	logs文件夹放置系统生成的日志文件
++	records文件中记录图片检测结果数据，用户对AI问答系统的评价，为数据看板功能提供服务
++	ultralytics为程序提供必要的依赖
++	utils文件中存储一些实现功能所需要的工具类
++	main.py为后端服务的启动文件
+
+
 ## 后端接口文档
 
 + 部署前端项目（前端项目地址如下）
@@ -139,7 +156,7 @@ https://github.com/GonnaBeStrong/CT-scanning-foreend
 
 
 
-## 模型训练
+## 关于模型训练
 ### 1. 数据集
 1. 目标检测模型
 
